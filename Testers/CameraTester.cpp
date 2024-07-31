@@ -1,10 +1,12 @@
+#ifdef _WINDOWS
 #undef max
 #undef min
+#endif
 #include <opencv2/opencv.hpp>
 
 #include <GalaxySDK.hpp>
 
-#include <Cango/CommonUtils/CallCounterX.hpp>
+#include <Cango/CommonUtils/CallRateCounterX.hpp>
 
 using namespace Cango;
 using namespace std::chrono_literals;

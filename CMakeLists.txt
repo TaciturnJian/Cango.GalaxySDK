@@ -28,8 +28,7 @@ AddCXXModule(
 		spdlog::spdlog
 		${OpenCV_LIBRARIES}
 		Cango::TaskDesign
-		Cango_CommonUtils_AsyncItemPool
-		Cango_CommonUtils_CounterX
+		Cango::CommonUtils
 )
 target_include_directories(Cango_GalaxySDK BEFORE PUBLIC ${GalaxySDK_Headers})
 
