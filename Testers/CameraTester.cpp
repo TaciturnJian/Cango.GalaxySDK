@@ -17,10 +17,6 @@ int main() {
 
 	if (!GalaxySDK::Initialize(logger)) return 1;
 
-	std::uint32_t device_count{};
-	if (!GalaxySDK::RefreshDeviceInfoList(logger, device_count)) return 2;
-	if (device_count < 1) return 3;
-
 	GalaxySDK::GxCameraCheatsheet cheatsheet{};
 	{
 		{
@@ -33,9 +29,9 @@ int main() {
 			open_params.UseOrder = true;
 			open_params.Order = 1;
 			auto& cam_params = options.ConfigureParameter;
-			cam_params.AutoExposure.Value = false;
+			cam_params.AutoExposure.Value = GX_EXPOSURE_AUTO_OFF;
 			cam_params.ExposureTime.Value = 6000;
-			cam_params.AutoGain.Value = false;
+			cam_params.AutoGain.Value = GX_GAIN_AUTO_OFF;
 			cam_params.Gain.Value = 16.0f;
 			cam_params.RedBalanceRatio.Value = 1.5352f;
 			cam_params.GreenBalanceRatio.Value = 1;

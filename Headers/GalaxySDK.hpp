@@ -146,16 +146,17 @@ namespace Cango::GalaxySDK {
 		using Gain = DeviceFloatParameter<GX_FLOAT_GAIN>;
 		using AutoGainMax = DeviceFloatParameter<GX_FLOAT_AUTO_GAIN_MAX>;
 		using AutoGainMin = DeviceFloatParameter<GX_FLOAT_AUTO_GAIN_MIN>;
-		using AutoGain = DeviceBoolParameter<GX_GAIN_AUTO_OFF>;
+		using AutoGain = DeviceEnumParameter<GX_ENUM_GAIN_AUTO, GX_GAIN_AUTO_ENTRY>;
 
 		using ExposureTime = DeviceFloatParameter<GX_FLOAT_EXPOSURE_TIME>;
 		using AutoExposureTimeMax = DeviceFloatParameter<GX_FLOAT_AUTO_EXPOSURE_TIME_MAX>;
 		using AutoExposureTimeMin = DeviceFloatParameter<GX_FLOAT_AUTO_EXPOSURE_TIME_MIN>;
-		using AutoExposure = DeviceBoolParameter<GX_EXPOSURE_AUTO_OFF>;
+		using AutoExposure = DeviceEnumParameter<GX_ENUM_EXPOSURE_AUTO, GX_EXPOSURE_AUTO_ENTRY>;
 
 		using BalanceRatioSelector = DeviceEnumParameter<
 			GX_ENUM_BALANCE_RATIO_SELECTOR, GX_BALANCE_RATIO_SELECTOR_ENTRY>;
 		using BalanceRatio = DeviceFloatParameter<GX_FLOAT_BALANCE_RATIO>;
+		using AutoBalance = DeviceEnumParameter<GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_ENTRY>;
 	}
 
 	inline namespace DeviceControls {
@@ -215,17 +216,23 @@ namespace Cango::GalaxySDK {
 		Parameters::BalanceRatio BlueBalanceRatio{};
 
 		bool Apply(spdlog::logger& logger, const GX_DEV_HANDLE device) {
-			if (AutoGain.Value) {
+			AutoGain.Set(logger, device);
+			if (AutoGain.Value != GX_GAIN_AUTO_OFF) {
 				if (!AutoGainMax.Set(logger, device)) return false;
 				if (!AutoGainMin.Set(logger, device)) return false;
 			}
 			else { if (!Gain.Set(logger, device)) return false; }
 
-			if (AutoExposure.Value) {
+			AutoExposure.Set(logger, device);
+			if (AutoExposure.Value != GX_EXPOSURE_AUTO_OFF) {
 				if (!AutoExposureTimeMax.Set(logger, device)) return false;
 				if (!AutoExposureTimeMin.Set(logger, device)) return false;
 			}
 			else { if (!ExposureTime.Set(logger, device)) return false; }
+
+			Parameters::AutoBalance auto_balance{};
+			auto_balance.Value = GX_BALANCE_WHITE_AUTO_OFF;
+			if (!auto_balance.Set(logger, device)) return false;
 
 			Parameters::BalanceRatioSelector selector{};
 			selector.Value = GX_BALANCE_RATIO_SELECTOR_RED;
@@ -286,6 +293,7 @@ namespace Cango::GalaxySDK {
 		void SetItem(const ObjectOwner<GxCamera>& camera) noexcept {
 			auto&& config = Configure();
 			config.Actors.ItemSource = camera;
+			config.Actors.Monitor.lock()->Reset();
 			Task.Execute();
 		}
 	};

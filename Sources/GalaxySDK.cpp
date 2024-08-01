@@ -163,13 +163,13 @@ namespace Cango::GalaxySDK:: inline DeviceControls {
 	              void* imageBuffer) noexcept {
 #ifndef _LINUX
 		GX_FRAME_DATA frame{.pImgBuf = imageBuffer};
-		if (GXGetImage(deviceHandle, &frame, 1000) != GX_STATUS_SUCCESS) {
+		if (GXGetImage(deviceHandle, &frame, 100) != GX_STATUS_SUCCESS) {
 			logger.error("无法获取图像：{}", GetErrorMessage(logger));
 			return false;
 		}
 #else
 		GX_FRAME_BUFFER* frame_buffer{nullptr};
-		if (GXDQBuf(deviceHandle, &frame_buffer, 1000) != GX_STATUS_SUCCESS) {
+		if (GXDQBuf(deviceHandle, &frame_buffer, 100) != GX_STATUS_SUCCESS) {
 			logger.error("无法获取图像：{}", GetErrorMessage(logger));
 			return false;
 		}
@@ -259,10 +259,10 @@ namespace Cango::GalaxySDK {
 		auto& handle = *camera_handle;
 		auto& logger = *Logger;
 
-		if (OpenParameter.UseOrder
-			    ? !GetDeviceByOrder(logger, OpenParameter.Order, handle)
-			    : !GetDeviceByIdentifier(logger , OpenParameter.Identifier, handle)
-		)
+		if (!(OpenParameter.UseOrder
+			      ? GetDeviceByOrder(logger, OpenParameter.Order, handle)
+			      : GetDeviceByIdentifier(logger, OpenParameter.Identifier, handle)
+		))
 			return false;
 		camera = std::make_shared<GxCamera>(std::move(camera_handle), CameraLogger);
 		if (!ConfigureParameter.Apply(logger, handle)) return false;
