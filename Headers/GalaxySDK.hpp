@@ -20,7 +20,7 @@ namespace Cango::GalaxySDK {
 			spdlog::logger& logger,
 			const GX_STATUS& error,
 			const std::size_t& size,
-			std::span<char> content) noexcept;
+			std::span<char> buffer) noexcept;
 
 		bool GetErrorMessage(spdlog::logger& logger, std::string& message) noexcept;
 

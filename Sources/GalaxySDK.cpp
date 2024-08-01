@@ -13,14 +13,21 @@ namespace Cango::GalaxySDK::inline Utils {
 		spdlog::logger& logger,
 		const GX_STATUS& error,
 		const std::size_t& size,
-		std::span<char> content) noexcept {
+		std::span<char> buffer) noexcept {
+		GX_STATUS error_code{};
 		if (
 			GXGetLastError(
-				const_cast<GX_STATUS*>(&error),
-				content.data(),
+				&error_code,
+				buffer.data(),
 				const_cast<std::size_t*>(&size)
-			) == GX_STATUS_SUCCESS)
+			) == GX_STATUS_SUCCESS) {
+			if (error_code != error)
+				logger.warn(
+					"获取到最新的错误消息，但是错误代码不匹配({} != {})",
+					static_cast<int>(error),
+					error_code);
 			return true;
+		}
 		logger.error("无法获取最新错误的内容");
 		return false;
 	}
@@ -34,7 +41,6 @@ namespace Cango::GalaxySDK::inline Utils {
 		if (!GetErrorContent(logger, error_code, error_size, error_content)) return false;
 
 		// make sure the message is null-terminated and copied from the unsafe memory
-		// TODO you should verify this shit, right now!
 		message = std::ostringstream{std::string{error_content.data()}}.str();
 		return true;
 	}
