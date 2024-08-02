@@ -236,14 +236,16 @@ namespace Cango::GalaxySDK {
 
 			Parameters::BalanceRatioSelector selector{};
 			selector.Value = GX_BALANCE_RATIO_SELECTOR_RED;
-			if (!selector.Set(logger, device) && !RedBalanceRatio.Set(logger, device)) return false;
+			if (!selector.Set(logger, device)) return false;
+			if (!RedBalanceRatio.Set(logger, device)) return false;
 
 			selector.Value = GX_BALANCE_RATIO_SELECTOR_GREEN;
-			if (!selector.Set(logger, device) && !GreenBalanceRatio.Set(logger, device)) return false;
+			if (!selector.Set(logger, device)) return false;
+			if (!GreenBalanceRatio.Set(logger, device)) return false;
 
 			selector.Value = GX_BALANCE_RATIO_SELECTOR_BLUE;
-			if (!selector.Set(logger, device) && !BlueBalanceRatio.Set(logger, device)) return false;
-
+			if (!selector.Set(logger, device)) return false;
+			if (!BlueBalanceRatio.Set(logger, device)) return false;
 			return true;
 		}
 	};

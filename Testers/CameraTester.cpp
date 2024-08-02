@@ -26,16 +26,19 @@ int main() {
 			actors.CameraLogger = logger_user;
 			const auto& options = config.Options;
 			auto& open_params = options.OpenParameter;
-			open_params.UseOrder = true;
-			open_params.Order = 1;
+			open_params.UseOrder = false;
+			open_params.Identifier.Type = GalaxySDK::DeviceIdentifier::SerialNumber;
+			open_params.Identifier.Content = "KE0200060395";
+			/*open_params.UseOrder = true;
+			open_params.Order = 1;*/
 			auto& cam_params = options.ConfigureParameter;
 			cam_params.AutoExposure.Value = GX_EXPOSURE_AUTO_OFF;
 			cam_params.ExposureTime.Value = 6000;
 			cam_params.AutoGain.Value = GX_GAIN_AUTO_OFF;
 			cam_params.Gain.Value = 16.0f;
-			cam_params.RedBalanceRatio.Value = 1.5352f;
+			cam_params.RedBalanceRatio.Value = 1.4492f;
 			cam_params.GreenBalanceRatio.Value = 1;
-			cam_params.BlueBalanceRatio.Value = 1.5664;
+			cam_params.BlueBalanceRatio.Value = 1.5859f;
 		}
 		{
 			auto&& config = cheatsheet.Consumer->Configure();
@@ -56,8 +59,8 @@ int main() {
 
 			const auto now = std::chrono::steady_clock::now();
 			auto fps = counter.Call(now);
-			/*cv::imshow("sample", image);
-			cv::waitKey(1);*/
+			cv::imshow("sample", image);
+			cv::waitKey(1);
 			if (now - begin > 1s) {
 				begin = now;
 				spdlog::info("FPS: {}", fps);
