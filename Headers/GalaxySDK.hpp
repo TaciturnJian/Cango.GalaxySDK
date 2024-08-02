@@ -318,4 +318,45 @@ namespace Cango::GalaxySDK {
 
 		GxCameraCheatsheet();
 	};
+
+	struct TimedPicture {
+		std::chrono::steady_clock::time_point Time;
+		cv::Mat Frame;
+	};
+
+	struct TimedGxCamera {
+		ObjectOwner<GxCamera> InnerCamera{};
+
+		using ItemType = TimedPicture;
+
+		bool GetItem(TimedPicture& picture) const noexcept {
+			if (!InnerCamera->GetItem(picture.Frame)) return false;
+			picture.Time = std::chrono::steady_clock::now();
+			return true;
+		}
+	};
+
+	using TimedCameraCaptureTask = DeliveryTask<TimedGxCamera, TripleItemPool<TimedPicture>, EasyDeliveryTaskMonitor>;
+
+	class TimedGxCameraProvider {
+		GxCameraProvider Provider{};
+
+	public:
+		auto Configure() noexcept { return Provider.Configure(); }
+
+		bool IsFunctional() const noexcept { return Provider.IsFunctional(); }
+
+		using ItemType = ObjectOwner<TimedGxCamera>;
+
+		bool GetItem(ObjectOwner<TimedGxCamera>& camera) noexcept {
+			auto new_camera = std::make_shared<TimedGxCamera>();
+			if (!Provider.GetItem(new_camera->InnerCamera)) return false;
+			camera = std::move(new_camera);
+			return true;
+		}
+	};
+
+	class TimedGxCameraConsumer {
+		
+	};
 }
