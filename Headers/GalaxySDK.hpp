@@ -64,8 +64,10 @@ namespace Cango::GalaxySDK {
 
 		bool GetDeviceByOrder(spdlog::logger& logger, std::uint32_t order, GX_DEV_HANDLE& deviceHandle) noexcept;
 
-		bool GetDeviceByIdentifier(spdlog::logger& logger, const DeviceIdentifier& id,
-		                           GX_DEV_HANDLE& deviceHandle) noexcept;
+		bool GetDeviceByIdentifier(
+			spdlog::logger& logger,
+			const DeviceIdentifier& id,
+			GX_DEV_HANDLE& deviceHandle) noexcept;
 	}
 
 	template <typename TValue>
@@ -154,7 +156,8 @@ namespace Cango::GalaxySDK {
 		using AutoExposure = DeviceEnumParameter<GX_ENUM_EXPOSURE_AUTO, GX_EXPOSURE_AUTO_ENTRY>;
 
 		using BalanceRatioSelector = DeviceEnumParameter<
-			GX_ENUM_BALANCE_RATIO_SELECTOR, GX_BALANCE_RATIO_SELECTOR_ENTRY>;
+			GX_ENUM_BALANCE_RATIO_SELECTOR,
+			GX_BALANCE_RATIO_SELECTOR_ENTRY>;
 		using BalanceRatio = DeviceFloatParameter<GX_FLOAT_BALANCE_RATIO>;
 		using AutoBalance = DeviceEnumParameter<GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_ENTRY>;
 	}
@@ -169,8 +172,11 @@ namespace Cango::GalaxySDK {
 
 		bool StopCapture(spdlog::logger& logger, const GX_DEV_HANDLE& deviceHandle) noexcept;
 
-		bool GetImage(spdlog::logger& logger, const GX_DEV_HANDLE& deviceHandle, cv::Mat& image,
-		              void* imageBuffer = nullptr) noexcept;
+		bool GetImage(
+			spdlog::logger& logger, 
+			const GX_DEV_HANDLE& deviceHandle, 
+			cv::Mat& image,
+			void* imageBuffer = nullptr) noexcept;
 	}
 
 	struct GxCamera {
