@@ -2,6 +2,22 @@
 #include <DxImageProc.h>
 #include <GalaxySDK.hpp>
 
+namespace {
+	void ConvertRaw8ToRGB24(const GX_FRAME_BUFFER& raw8Image, cv::Mat& rgbImage) {
+		rgbImage.create(raw8Image.nHeight, raw8Image.nWidth, CV_8UC3);
+		(void)DxRaw8toRGB24Ex(
+			raw8Image.pImgBuf,
+			rgbImage.data,
+			raw8Image.nWidth,
+			raw8Image.nHeight,
+			RAW2RGB_NEIGHBOUR,
+			BAYERBG,
+			false,
+			DX_ORDER_RGB
+		); //todo 检查这里的错误
+	}
+}
+
 namespace Cango::GalaxySDK::inline Utils {
 	bool GetErrorInfo(spdlog::logger& logger, GX_STATUS& error, std::size_t& size) noexcept {
 		if (GXGetLastError(&error, nullptr, &size) == GX_STATUS_SUCCESS) return true;
@@ -193,17 +209,7 @@ namespace Cango::GalaxySDK:: inline DeviceControls {
 			return false;
 		}
 		image.create(frame.nHeight, frame.nWidth, CV_8UC3);
-		(void)DxRaw8toRGB24Ex(
-			frame.pImgBuf,
-			image.data,
-			frame.nWidth,
-			frame.nHeight,
-			RAW2RGB_NEIGHBOUR,
-			BAYERBG,
-			false,
-			DX_ORDER_RGB
-		); //todo 检查这里的错误
-
+		ConvertRaw8ToRGB24(frame, image);
 #ifdef _LINUX
 		if (GXQBuf(deviceHandle, frame_buffer) != GX_STATUS_SUCCESS) {
 			logger.error("归还缓冲区失败：{}", GetErrorMessage(logger));
