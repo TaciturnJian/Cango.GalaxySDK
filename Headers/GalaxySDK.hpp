@@ -8,7 +8,7 @@
 #include <opencv2/core.hpp>
 #include <GxIAPI.h>
 
-#include <Cango/TaskDesign/ItemOwnership.hpp>
+#include <Cango/TaskDesign/ObjectOwnership.hpp>
 #include <Cango/TaskDesign/DeliveryTask.hpp>
 #include <Cango/CommonUtils/AsyncItemPool.hpp>
 
@@ -189,9 +189,7 @@ namespace Cango::GalaxySDK {
 
 		~GxCamera() noexcept {
 			if (DeviceHandle == nullptr || *DeviceHandle == nullptr) return;
-
-			if (Logger == nullptr) Logger = spdlog::default_logger();
-			auto& logger = *Logger;
+			auto& logger = Logger.IsValid() ? *Logger : *spdlog::default_logger();
 			const auto& device = *DeviceHandle;
 			(void)StopCapture(logger, device);
 			(void)CloseDevice(logger, device);
@@ -292,16 +290,16 @@ namespace Cango::GalaxySDK {
 
 		[[nodiscard]] bool IsFunctional() noexcept {
 			auto&& config = Configure();
-			auto& actors = config.Actors;
-			return ValidateAll(actors.Monitor, actors.ItemDestination);
+			const auto actors = config.Actors;
+			return Validate(actors.Monitor, actors.ItemDestination);
 		}
 
 		using ItemType = ObjectOwner<GxCamera>;
 
 		void SetItem(const ObjectOwner<GxCamera>& camera) noexcept {
 			auto&& config = Configure();
-			config.Actors.ItemSource = camera;
-			config.Actors.Monitor.lock()->Reset();
+			if (!camera.Authorize(config.Actors.ItemSource)) return;
+			config.Actors.Monitor.AcquireUser()->Reset();
 			Task.Execute();
 		}
 	};
@@ -309,11 +307,11 @@ namespace Cango::GalaxySDK {
 	using CameraDeliveryTask = DeliveryTask<GxCameraProvider, GxCameraConsumer, EasyDeliveryTaskMonitor>;
 
 	struct GxCameraCheatsheet {
-		ObjectOwner<TripleItemPool<cv::Mat>> ImagePool{std::make_shared<TripleItemPool<cv::Mat>>()};
-		ObjectOwner<GxCameraProvider> Provider{std::make_shared<GxCameraProvider>()};
-		ObjectOwner<GxCameraConsumer> Consumer{std::make_shared<GxCameraConsumer>()};
-		ObjectOwner<EasyDeliveryTaskMonitor> DeliveryMonitor{std::make_shared<EasyDeliveryTaskMonitor>()};
-		ObjectOwner<EasyDeliveryTaskMonitor> CaptureMonitor{std::make_shared<EasyDeliveryTaskMonitor>()};
+		ObjectOwner<TripleItemPool<cv::Mat>> ImagePool{};
+		ObjectOwner<GxCameraProvider> Provider{};
+		ObjectOwner<GxCameraConsumer> Consumer{};
+		ObjectOwner<EasyDeliveryTaskMonitor> DeliveryMonitor{};
+		ObjectOwner<EasyDeliveryTaskMonitor> CaptureMonitor{};
 		CameraDeliveryTask Task{};
 
 		GxCameraCheatsheet();
@@ -349,7 +347,7 @@ namespace Cango::GalaxySDK {
 		using ItemType = ObjectOwner<TimedGxCamera>;
 
 		bool GetItem(ObjectOwner<TimedGxCamera>& camera) noexcept {
-			auto new_camera = std::make_shared<TimedGxCamera>();
+			ObjectOwner<TimedGxCamera> new_camera{};
 			if (!Provider.GetItem(new_camera->InnerCamera)) return false;
 			camera = std::move(new_camera);
 			return true;

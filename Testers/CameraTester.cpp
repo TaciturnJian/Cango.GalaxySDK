@@ -12,7 +12,7 @@ using namespace Cango;
 using namespace std::chrono_literals;
 
 int main() {
-	const auto logger_user = spdlog::default_logger();
+	const ObjectUser logger_user{spdlog::default_logger()};
 	auto& logger = *logger_user;
 
 	if (!GalaxySDK::Initialize(logger)) return 1;
