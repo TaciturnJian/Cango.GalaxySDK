@@ -1,9 +1,9 @@
 #include <sstream>
 #include <DxImageProc.h>
-#include <GalaxySDK.hpp>
+#include <Cango/GalaxySDK.hpp>
 
 namespace {
-	void ConvertRaw8ToRGB24(const GX_FRAME_BUFFER& raw8Image, cv::Mat& rgbImage) {
+	void ConvertRaw8ToRGB24(const auto& raw8Image, cv::Mat& rgbImage) {
 		rgbImage.create(raw8Image.nHeight, raw8Image.nWidth, CV_8UC3);
 		(void)DxRaw8toRGB24Ex(
 			raw8Image.pImgBuf,
@@ -249,6 +249,7 @@ namespace Cango::GalaxySDK {
 		};
 	}
 
+	// ReSharper disable once CppMemberFunctionMayBeConst
 	bool GxCamera::GetItem(cv::Mat& image) noexcept {
 #ifndef _LINUX
 		return GetImage(*Logger, *DeviceHandle, image, ImageBuffer.data());

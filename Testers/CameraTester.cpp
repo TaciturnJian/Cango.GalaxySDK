@@ -1,10 +1,6 @@
-#ifdef _WINDOWS
-#undef max
-#undef min
-#endif
 #include <opencv2/opencv.hpp>
 
-#include <GalaxySDK.hpp>
+#include <Cango/GalaxySDK.hpp>
 
 #include <Cango/CommonUtils/CallRateCounterX.hpp>
 
