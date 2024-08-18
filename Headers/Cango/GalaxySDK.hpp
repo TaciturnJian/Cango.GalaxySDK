@@ -3,7 +3,7 @@
 #include <memory>
 #include <opencv2/core.hpp>
 
-#include <Cango/TaskDesign/ObjectOwnership.hpp>
+#include <Cango/CommonUtils/ObjectOwnership.hpp>
 #include <Cango/TaskDesign/DeliveryTask.hpp>
 #include <Cango/CommonUtils/AsyncItemPool.hpp>
 
@@ -96,8 +96,8 @@ namespace Cango::GalaxySDK {
 
 		[[nodiscard]] bool IsFunctional() const noexcept;
 
-		using ItemType = ObjectOwner<GxCamera>;
-		bool GetItem(ObjectOwner<GxCamera>& camera) noexcept;
+		using ItemType = Owner<GxCamera>;
+		bool GetItem(Owner<GxCamera>& camera) noexcept;
 	};
 
 	using CameraCaptureTask = DeliveryTask<GxCamera, TripleItemPool<cv::Mat>, EasyDeliveryTaskMonitor>;
@@ -110,17 +110,23 @@ namespace Cango::GalaxySDK {
 
 		[[nodiscard]] bool IsFunctional() noexcept {
 			const auto actors = Task.Configure().Actors;
-			return Validate(actors.Monitor, actors.ItemDestination);
+			return !actors.Monitor.expired() && !actors.ItemDestination.expired();
 		}
 
-		using ItemType = ObjectOwner<GxCamera>;
+		using ItemType = Owner<GxCamera>;
 
-		void SetItem(const ObjectOwner<GxCamera>& camera) noexcept {
-			// 参数中的 camera 是一个指向所有者的引用，这里获取一个 user 防止资源在 Task.Execute 时被释放
-			const auto camera_user = camera.AcquireUser();
+		void SetItem(const Owner<GxCamera>& camera) noexcept {
 			const auto actors = Task.Configure().Actors;
-			camera_user.Authorize(actors.ItemSource);
-			actors.Monitor.AcquireUser()->Reset();
+
+			// 参数中的 camera 是一个指向所有者的引用，这里获取一个 user 防止资源在 Task.Execute 时被释放
+			const ObjectUser<GxCamera> camera_user{camera};
+			const auto monitor_user = actors.Monitor.lock();
+
+			if (!camera_user || !monitor_user) return;
+			
+			actors.ItemSource = camera_user;
+			monitor_user->Reset();
+
 			Task.Execute();
 		}
 	};
@@ -128,11 +134,11 @@ namespace Cango::GalaxySDK {
 	using CameraDeliveryTask = DeliveryTask<GxCameraProvider, GxCameraConsumer, EasyDeliveryTaskMonitor>;
 
 	struct GxCameraCheatsheet {
-		ObjectOwner<TripleItemPool<cv::Mat>> ImagePool{};
-		ObjectOwner<GxCameraProvider> Provider{};
-		ObjectOwner<GxCameraConsumer> Consumer{};
-		ObjectOwner<EasyDeliveryTaskMonitor> DeliveryMonitor{};
-		ObjectOwner<EasyDeliveryTaskMonitor> CaptureMonitor{};
+		Owner<TripleItemPool<cv::Mat>> ImagePool{};
+		Owner<GxCameraProvider> Provider{};
+		Owner<GxCameraConsumer> Consumer{};
+		Owner<EasyDeliveryTaskMonitor> DeliveryMonitor{};
+		Owner<EasyDeliveryTaskMonitor> CaptureMonitor{};
 		CameraDeliveryTask Task{};
 
 		GxCameraCheatsheet();
@@ -144,7 +150,7 @@ namespace Cango::GalaxySDK {
 	};
 
 	struct TimedGxCamera {
-		ObjectOwner<GxCamera> InnerCamera{};
+		Owner<GxCamera> InnerCamera{};
 
 		using ItemType = TimedPicture;
 
@@ -165,10 +171,10 @@ namespace Cango::GalaxySDK {
 
 		[[nodiscard]] bool IsFunctional() const noexcept { return Provider.IsFunctional(); }
 
-		using ItemType = ObjectOwner<TimedGxCamera>;
+		using ItemType = Owner<TimedGxCamera>;
 
-		bool GetItem(ObjectOwner<TimedGxCamera>& camera) noexcept {
-			ObjectOwner<TimedGxCamera> new_camera{};
+		bool GetItem(Owner<TimedGxCamera>& camera) noexcept {
+			Owner<TimedGxCamera> new_camera{};
 			if (!Provider.GetItem(new_camera->InnerCamera)) return false;
 			camera = std::move(new_camera);
 			return true;

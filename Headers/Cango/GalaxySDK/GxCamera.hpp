@@ -13,7 +13,7 @@ namespace Cango::GalaxySDK {
 
 		~GxCamera() noexcept {
 			if (DeviceHandle == nullptr || *DeviceHandle == nullptr) return;
-			auto& logger = Logger.IsValid() ? *Logger : *spdlog::default_logger();
+			auto& logger = Logger ? *Logger : *spdlog::default_logger();
 			const auto& device = *DeviceHandle;
 			(void)StopCapture(logger, device);
 			(void)CloseDevice(logger, device);

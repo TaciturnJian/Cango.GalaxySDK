@@ -265,10 +265,10 @@ namespace Cango::GalaxySDK {
 		};
 	}
 
-	bool GxCameraProvider::IsFunctional() const noexcept { return Validate(Logger, CameraLogger); }
+	bool GxCameraProvider::IsFunctional() const noexcept { return Logger && CameraLogger; }
 
-	bool GxCameraProvider::GetItem(ObjectOwner<GxCamera>& camera) noexcept {
-		ObjectOwner<GxCamera> new_camera{};
+	bool GxCameraProvider::GetItem(Owner<GxCamera>& camera) noexcept {
+		Owner<GxCamera> new_camera{};
 		auto& handle = *new_camera->DeviceHandle;
 		auto& logger = *Logger;
 		if (!(OpenParameter.UseOrder
@@ -291,17 +291,25 @@ namespace Cango::GalaxySDK {
 
 	GxCameraCheatsheet::GxCameraCheatsheet() {
 		auto&& provider_config = Provider->Configure();
-		provider_config.Actors.Logger = ObjectUser{spdlog::default_logger()};
-		provider_config.Actors.CameraLogger = ObjectUser{spdlog::default_logger()};
+		{
+			const auto actors = provider_config.Actors;
+			actors.Logger = spdlog::default_logger();
+			actors.CameraLogger = spdlog::default_logger();
+		}
 
 		auto&& consumer_config = Consumer->Configure();
-		CaptureMonitor.Authorize(consumer_config.Actors.Monitor);
-		ImagePool.Authorize(consumer_config.Actors.ItemDestination);
+		{
+			const auto actors = consumer_config.Actors;
+			actors.Monitor = CaptureMonitor;
+			actors.ItemDestination = ImagePool;
+		}
 
 		auto&& task_config = Task.Configure();
-		const auto actors = task_config.Actors;
-		DeliveryMonitor.Authorize(actors.Monitor);
-		Provider.Authorize(actors.ItemSource);
-		Consumer.Authorize(actors.ItemDestination);
+		{
+			const auto actors = task_config.Actors;
+			actors.Monitor = DeliveryMonitor;
+			actors.ItemSource = Provider;
+			actors.ItemDestination = Consumer;
+		}
 	}
 }
