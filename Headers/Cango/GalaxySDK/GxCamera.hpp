@@ -4,7 +4,7 @@
 
 namespace Cango::GalaxySDK {
 	struct GxCamera {
-		std::unique_ptr<GX_DEV_HANDLE> DeviceHandle{};
+		std::unique_ptr<GX_DEV_HANDLE> DeviceHandle{std::make_unique<GX_DEV_HANDLE>()};
 		ObjectUser<spdlog::logger> Logger{};
 		std::vector<std::uint8_t> ImageBuffer{};
 
