@@ -22,6 +22,9 @@ endif()
 AddCXXModule(
 	NAME "GalaxySDK"
 	NAMESPACE "Cango"
+	HEADER_DIR Headers
+	SOURCE_DIR Sources
+	TESTER_DIR Testers
 	LINKS
 		${GalaxySDK_LIBRARIES}
 		fmt::fmt
